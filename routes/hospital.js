@@ -8,7 +8,7 @@ router.post("/user/bookBed", auth.verifyToken, hospital.hospitalForm);
 router.get("/user/findBookings", auth.verifyToken, hospital.findBookings);
 router.get("/user/findInsurance", auth.verifyToken, hospital.findInsurance);
 router.get(
-  "/user/insuranceHospital/:insuranceName",
+  "/user/insuranceHospital/:insuranceName/:tpa",
   hospital.insuranceHospital
 );
 router.get(

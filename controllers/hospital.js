@@ -114,7 +114,10 @@ exports.insuranceHospital = async (req, res) => {
     hospitalInsurancedb
       .aggregate([
         {
-          $match: { "details.insurance": req.params.insuranceName },
+          $match: {
+            "details.insurance": req.params.insuranceName,
+            "details.tpa": req.params.tpa,
+          },
         },
         {
           $lookup: {
@@ -133,7 +136,6 @@ exports.insuranceHospital = async (req, res) => {
         res.send(a);
       });
   } catch (err) {
-    console.log(err);
     res.status(500).send(err);
   }
 };
