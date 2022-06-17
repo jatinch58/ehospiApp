@@ -9,7 +9,7 @@ app.use(allRoutes);
 async function main() {
   try {
     await mongoose.connect(
-      "mongodb+srv://userProfiles:MoBohTt3PGtlsyCy@cluster0.nx0ry.mongodb.net/eHospiDatabase?retryWrites=true&w=majority"
+      "mongodb+srv://kickr:bzMgnSGQaNhxWlrh@cluster0.hizynpg.mongodb.net/ehospi?retryWrites=true&w=majority"
     );
     console.log("Database connected sucessfully");
   } catch (error) {
