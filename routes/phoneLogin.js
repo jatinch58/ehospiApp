@@ -17,4 +17,5 @@ router.get(
   phoneLogin.isAlreadyRegistered
 );
 router.put("/user/updateProfile", auth.verifyToken, phoneLogin.updateProfile);
+router.get("/user/facebook", phoneLogin.checkFacebookToken);
 module.exports = router;

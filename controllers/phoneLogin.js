@@ -214,3 +214,41 @@ exports.updateProfile = async (req, res) => {
     res.status(500).send({ message: e.name });
   }
 };
+//===========================Facebook login==========================//
+exports.checkFacebookToken = async (req, res) => {
+  try {
+    const accessToken = req.body.token;
+    const check = await axios.get(
+      `https://graph.facebook.com/me?access_token=${accessToken}`
+    );
+    if (req.body.id === check.data.id) {
+      const myuid = "fb" + check.data.id;
+      const myRefreshToken = uuidv4();
+      await tokendb.findOneAndDelete({ uid: myuid });
+      const createRefreshToken = new tokendb({
+        uid: myuid,
+        refreshToken: myRefreshToken,
+      });
+      const n = await createRefreshToken.save();
+
+      if (n) {
+        const token = jwt.sign({ uid: myuid }, "123456", {
+          expiresIn: "24h",
+        });
+        res.status(200).send({
+          token: token,
+          refreshToken: myRefreshToken,
+          imageUrl: req.body.picture,
+          name: check.data.name,
+          email: req.body.email,
+        });
+      } else {
+        res.status(500).send({ message: "Something bad happened" });
+      }
+    } else {
+      res.status(500).send({ message: "Something bad happened" });
+    }
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
