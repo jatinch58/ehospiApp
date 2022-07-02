@@ -6,6 +6,8 @@ const hospitalInsurancedb = require("../models/hospitalInsurance");
 const departmentsdb = require("../models/hospitalDepartments");
 const servicesdb = require("../models/hospitalServices");
 const bedTypedb = require("../models/bedType");
+const imagedb = require("../models/hospitalImage");
+
 exports.findHospital = async (req, res) => {
   try {
     const HospitalFind = await hospital.find({}, { _id: 0, __v: 0 });
@@ -166,6 +168,16 @@ exports.findBedTypes = async (req, res) => {
       hospitalCode: req.params.hospitalCode,
     });
     res.status(200).send(bedFind);
+  } catch (err) {
+    res.status(500).send({ message: err.name });
+  }
+};
+exports.getHospitalPicture = async (req, res) => {
+  try {
+    const result = await imagedb.findOne({
+      hospitalCode: req.params.hospitalCode,
+    });
+    res.send({ data: result.imageUrl });
   } catch (err) {
     res.status(500).send({ message: err.name });
   }
