@@ -11,6 +11,11 @@ const bedTypes = new Schema({
         type: String,
         required: true,
       },
+      bedImages: [
+        {
+          type: String,
+        },
+      ],
       facilities: {
         type: Array,
         required: true,
