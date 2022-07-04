@@ -6,6 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(allRoutes);
+let port = process.env.PORT || 8000;
 async function main() {
   try {
     await mongoose.connect(
@@ -18,4 +19,4 @@ async function main() {
 }
 main();
 
-app.listen(8000, () => console.log(`Server listening on port 8000`));
+app.listen(port, () => console.log(`Server listening on port ${port}`));
