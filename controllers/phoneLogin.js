@@ -73,7 +73,7 @@ exports.verifyOTP = async (req, res) => {
 
             if (n) {
               const token = jwt.sign({ uid: myuid }, "123456", {
-                expiresIn: "24h",
+                expiresIn: "1m",
               });
               res.status(200);
               res.send({ token: token, refreshToken: myRefreshToken });
@@ -147,7 +147,7 @@ exports.refreshToken = async (req, res) => {
     });
     if (p) {
       const token = jwt.sign({ uid: p.uid }, "123456", {
-        expiresIn: "24h",
+        expiresIn: "1m",
       });
       const myRefreshToken = uuidv4();
       const p2 = await tokendb.findOneAndUpdate(
