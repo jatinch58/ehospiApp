@@ -76,7 +76,11 @@ exports.verifyOTP = async (req, res) => {
                 expiresIn: "30m",
               });
               res.status(200);
-              res.send({ token: token, refreshToken: myRefreshToken });
+              res.send({
+                uid: myuid,
+                token: token,
+                refreshToken: myRefreshToken,
+              });
             } else {
               res.status(500).send({ message: "Something bad happened" });
             }
@@ -236,6 +240,7 @@ exports.checkFacebookToken = async (req, res) => {
           expiresIn: "24h",
         });
         res.status(200).send({
+          uid: myuid,
           token: token,
           refreshToken: myRefreshToken,
           imageUrl: req.body.picture,
