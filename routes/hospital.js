@@ -31,4 +31,9 @@ router.get(
   auth.verifyToken,
   hospital.getHospitalPicture
 );
+router.get(
+  "/user/getBedImages/:hospitalCode/:id",
+  auth.verifyToken,
+  hospital.getBedImages
+);
 module.exports = router;

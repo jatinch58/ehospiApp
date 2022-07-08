@@ -182,3 +182,17 @@ exports.getHospitalPicture = async (req, res) => {
     res.status(500).send({ message: err.name });
   }
 };
+exports.getBedImages = async (req, res) => {
+  try {
+    const result = await bedTypedb.findOne(
+      {
+        hospitalCode: req.params.hospitalCode,
+        beds: { $elemMatch: { _id: req.params.id } },
+      },
+      { "beds.$": 1 }
+    );
+    res.send({ images: result.beds[0].bedImages });
+  } catch (err) {
+    res.status(500).send({ message: err.name });
+  }
+};
