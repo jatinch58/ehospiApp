@@ -5,12 +5,12 @@ const tokendb = require("../models/refreshToken");
 const { v4: uuidv4 } = require("uuid");
 const AWS = require("aws-sdk");
 const Joi = require("joi");
-//////////////////////////////////////phone login///////////////////////////
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ID,
   secretAccessKey: process.env.AWS_SECRET,
   Bucket: process.env.BUCKET_NAME,
 });
+//==========================================phone login=======================================//
 exports.phoneLogin = (req, res) => {
   try {
     const { body } = req;
@@ -44,7 +44,7 @@ exports.phoneLogin = (req, res) => {
     res.status(500).send({ message: "Error" });
   }
 };
-//////////////////////////////////verifyOTP/////////////////////////////////
+//===========================================verifyOTP========================================//
 exports.verifyOTP = async (req, res) => {
   try {
     const { body } = req;
@@ -101,7 +101,7 @@ exports.verifyOTP = async (req, res) => {
     res.status(500).send({ message: e.name });
   }
 };
-/////////////////////////////////create profile///////////////////////////////////////////////
+//=========================================create profile=====================================//
 exports.createProfile = async (req, res) => {
   try {
     const { body } = req;
@@ -136,7 +136,7 @@ exports.createProfile = async (req, res) => {
     res.status(500).send({ message: e.name });
   }
 };
-/////////////////////////////Show Profile/////////////////////////////////////
+//=========================================Show Profile=======================================//
 exports.showProfile = async (req, res) => {
   try {
     const userExist = await userdb.findOne(
@@ -152,7 +152,7 @@ exports.showProfile = async (req, res) => {
     res.status(500).send({ message: e.name });
   }
 };
-////////////////////////////refresh token//////////////////////////////////
+//=========================================refresh token======================================//
 exports.refreshToken = async (req, res) => {
   try {
     const p = await tokendb.findOne({
@@ -180,7 +180,7 @@ exports.refreshToken = async (req, res) => {
     res.status(500).send({ message: e.name });
   }
 };
-//////////////////////////////isAlreadyRegistered///////////////////////////////////
+//=======================================isAlreadyRegistered==================================//
 exports.isAlreadyRegistered = async (req, res) => {
   try {
     const userExist = await userdb.findOne({ uid: req.user.uid });
@@ -193,7 +193,7 @@ exports.isAlreadyRegistered = async (req, res) => {
     res.status(500).send({ message: e.name });
   }
 };
-/////////////////////////////////update profile///////////////////////////////////////////////
+//=======================================update profile=======================================//
 exports.updateProfile = async (req, res) => {
   try {
     const { body } = req;
@@ -267,6 +267,7 @@ exports.checkFacebookToken = async (req, res) => {
     res.status(500).send(error);
   }
 };
+//=============================== upload profile picture ===========================================//
 exports.uploadProfilePicture = async (req, res) => {
   try {
     let myFile = req.file.originalname.split(".");
@@ -298,6 +299,7 @@ exports.uploadProfilePicture = async (req, res) => {
     res.status(500).send({ message: e.name });
   }
 };
+//============================== get profile picture ===============================================//
 exports.getProfilePicture = async (req, res) => {
   try {
     const result = await userdb.findOne(
@@ -313,6 +315,7 @@ exports.getProfilePicture = async (req, res) => {
     res.status(500).send({ message: e.name });
   }
 };
+//================================ update profile picture ==========================================//
 exports.updateProfilePicture = async (req, res) => {
   try {
     let myFile = req.file.originalname.split(".");
