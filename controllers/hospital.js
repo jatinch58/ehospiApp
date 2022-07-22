@@ -82,7 +82,6 @@ exports.hospitalForm = async (req, res) => {
         employerName: req.body.employerName,
         employerId: req.body.employerId,
       });
-
       await addHospitalForm.save();
       res.status(200).send({ message: "Registered sucessfull" });
     }

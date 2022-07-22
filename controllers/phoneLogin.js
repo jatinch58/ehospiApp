@@ -3,8 +3,14 @@ const userdb = require("../models/userProfile.js");
 const jwt = require("jsonwebtoken");
 const tokendb = require("../models/refreshToken");
 const { v4: uuidv4 } = require("uuid");
+const AWS = require("aws-sdk");
 const Joi = require("joi");
 //////////////////////////////////////phone login///////////////////////////
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ID,
+  secretAccessKey: process.env.AWS_SECRET,
+  Bucket: process.env.BUCKET_NAME,
+});
 exports.phoneLogin = (req, res) => {
   try {
     const { body } = req;
@@ -21,7 +27,9 @@ exports.phoneLogin = (req, res) => {
     } else {
       axios
         .get(
-          "https://2factor.in/API/V1/c7573668-cfde-11ea-9fa5-0200cd936042/SMS/" +
+          "https://2factor.in/API/V1/" +
+            process.env.TWO_FACTOR +
+            "/SMS/" +
             req.body.phone +
             "/AUTOGEN"
         )
@@ -55,7 +63,9 @@ exports.verifyOTP = async (req, res) => {
     } else {
       axios
         .get(
-          "https://2factor.in/API/V1/c7573668-cfde-11ea-9fa5-0200cd936042/SMS/VERIFY/" +
+          "https://2factor.in/API/V1/" +
+            process.env.TWO_FACTOR +
+            "/SMS/VERIFY/" +
             req.body.details +
             "/" +
             req.body.otp
@@ -72,7 +82,7 @@ exports.verifyOTP = async (req, res) => {
             const n = await createRefreshToken.save();
 
             if (n) {
-              const token = jwt.sign({ uid: myuid }, "123456", {
+              const token = jwt.sign({ uid: myuid }, process.env.TOKEN_PASS, {
                 expiresIn: "1m",
               });
               res.status(200);
@@ -150,7 +160,7 @@ exports.refreshToken = async (req, res) => {
       refreshToken: req.body.refreshToken,
     });
     if (p) {
-      const token = jwt.sign({ uid: p.uid }, "123456", {
+      const token = jwt.sign({ uid: p.uid }, process.env.TOKEN_PASS, {
         expiresIn: "1m",
       });
       const myRefreshToken = uuidv4();
@@ -236,7 +246,7 @@ exports.checkFacebookToken = async (req, res) => {
       const n = await createRefreshToken.save();
 
       if (n) {
-        const token = jwt.sign({ uid: myuid }, "123456", {
+        const token = jwt.sign({ uid: myuid }, process.env.TOKEN_PASS, {
           expiresIn: "1m",
         });
         res.status(200).send({
@@ -255,5 +265,123 @@ exports.checkFacebookToken = async (req, res) => {
     }
   } catch (error) {
     res.status(500).send(error);
+  }
+};
+exports.uploadProfilePicture = async (req, res) => {
+  try {
+    let myFile = req.file.originalname.split(".");
+    const fileType = myFile[myFile.length - 1];
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: `${uuidv4()}.${fileType}`,
+      Body: req.file.buffer,
+    };
+
+    s3.upload(params, async (error, data) => {
+      if (error) {
+        return res.status(500).send(error);
+      } else {
+        const result = await userdb.findOneAndUpdate(
+          { uid: req.user.uid },
+          {
+            imageUrl: data.Location,
+          }
+        );
+        if (result) {
+          res.status(200).send({ message: "New image added successfully" });
+        } else {
+          res.status(500).send({ message: "Something bad happened" });
+        }
+      }
+    });
+  } catch (e) {
+    res.status(500).send({ message: e.name });
+  }
+};
+exports.getProfilePicture = async (req, res) => {
+  try {
+    const result = await userdb.findOne(
+      { uid: req.user.uid },
+      { _id: 0, imageUrl: 1 }
+    );
+    if (result) {
+      res.status(200).send(result);
+    } else {
+      res.status(500).send({ message: "Something went wrong" });
+    }
+  } catch (e) {
+    res.status(500).send({ message: e.name });
+  }
+};
+exports.updateProfilePicture = async (req, res) => {
+  try {
+    let myFile = req.file.originalname.split(".");
+    const fileType = myFile[myFile.length - 1];
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: `${uuidv4()}.${fileType}`,
+      Body: req.file.buffer,
+    };
+    s3.upload(params, async (error, dataResult) => {
+      if (error) {
+        return res.status(500).send(error);
+      } else {
+        let p = req.body.profileUrl;
+        if (p) {
+          p = p.split("/");
+          p = p[p.length - 1];
+          const params = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: p,
+          };
+          const s3delete = function (params) {
+            return new Promise((resolve, reject) => {
+              s3.createBucket(
+                {
+                  Bucket: params.Bucket,
+                },
+                function () {
+                  s3.deleteObject(params, async function (err, data) {
+                    if (err) res.status(500).send({ message: err });
+                    else {
+                      const result = await userdb.findOneAndUpdate(
+                        { uid: req.user.uid },
+                        {
+                          imageUrl: dataResult.Location,
+                        }
+                      );
+                      if (result) {
+                        res
+                          .status(200)
+                          .send({ message: "Image updated successfully" });
+                      } else {
+                        res
+                          .status(500)
+                          .send({ message: "Something bad happened" });
+                      }
+                    }
+                  });
+                }
+              );
+            });
+          };
+          s3delete(params);
+        } else {
+          const result = await userdb.findOneAndUpdate(
+            { uid: req.user.uid },
+            {
+              imageUrl: dataResult.Location,
+            }
+          );
+          if (result) {
+            res.status(200).send("updated sucessfully");
+          } else {
+            res.status(500).send({ message: "Something went wrong" });
+          }
+        }
+      }
+    });
+  } catch (e) {
+    res.status(500).send({ message: e.name });
   }
 };

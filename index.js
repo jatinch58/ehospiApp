@@ -1,3 +1,4 @@
+require("dotenv/config");
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -9,9 +10,7 @@ app.use(allRoutes);
 let port = process.env.PORT || 8000;
 async function main() {
   try {
-    await mongoose.connect(
-      "mongodb+srv://kickr:bzMgnSGQaNhxWlrh@cluster0.hizynpg.mongodb.net/ehospi?retryWrites=true&w=majority"
-    );
+    await mongoose.connect(process.env.MONGO_URL);
     console.log("Database connected sucessfully");
   } catch (error) {
     console.log(error);

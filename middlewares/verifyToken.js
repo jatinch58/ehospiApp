@@ -11,7 +11,7 @@ exports.verifyToken = (req, res, next) => {
         .send({ message: "A token is required for authentication" });
     }
     try {
-      const decoded = jwt.verify(token, "123456");
+      const decoded = jwt.verify(token, process.env.TOKEN_PASS);
       req.user = decoded;
       next();
     } catch (err) {
