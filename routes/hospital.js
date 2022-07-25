@@ -2,9 +2,14 @@ const express = require("express");
 const auth = require("../middlewares/verifyToken");
 const router = express.Router();
 const hospital = require("../controllers/hospital");
-
+const { formUpload } = require("../middlewares/fileUpload");
 router.get("/user/findHospital", auth.verifyToken, hospital.findHospital);
-router.post("/user/bookBed", auth.verifyToken, hospital.hospitalForm);
+router.post(
+  "/user/bookBed",
+  auth.verifyToken,
+  formUpload,
+  hospital.hospitalForm
+);
 router.get("/user/findBookings", auth.verifyToken, hospital.findBookings);
 router.get("/user/findInsurance", auth.verifyToken, hospital.findInsurance);
 router.get(

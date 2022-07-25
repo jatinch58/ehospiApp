@@ -79,6 +79,15 @@ const hospitalForm = new Schema({
   employerId: {
     type: String,
   },
+  prescriptionUrl: {
+    type: String,
+  },
+  idProofUrl: {
+    type: String,
+  },
+  insuranceUrl: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("hospitalform", hospitalForm);
