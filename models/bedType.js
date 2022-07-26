@@ -42,6 +42,10 @@ const bedTypes = new Schema({
           required: true,
         },
       },
+      numberOfBeds: {
+        type: Number,
+        required: true,
+      },
     },
   ],
 });
