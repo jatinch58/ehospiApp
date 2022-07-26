@@ -136,7 +136,7 @@ exports.hospitalForm = async (req, res) => {
       });
     }
   } catch (e) {
-    res.send({ message: e });
+    res.status(500).send({ message: e });
   }
 };
 exports.findBookings = async (req, res) => {
@@ -158,7 +158,6 @@ exports.findInsurance = async (req, res) => {
     res.status(500).send({ message: err.name });
   }
 };
-
 exports.insuranceHospital = async (req, res) => {
   try {
     hospitalInsurancedb
@@ -200,7 +199,6 @@ exports.findDepartments = async (req, res) => {
     res.status(500).send({ message: err.name });
   }
 };
-
 exports.findServices = async (req, res) => {
   try {
     const servicesFind = await servicesdb.find({

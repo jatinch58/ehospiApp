@@ -83,7 +83,7 @@ exports.verifyOTP = async (req, res) => {
 
             if (n) {
               const token = jwt.sign({ uid: myuid }, process.env.TOKEN_PASS, {
-                expiresIn: "1m",
+                expiresIn: "15m",
               });
               res.status(200);
               res.send({
@@ -161,7 +161,7 @@ exports.refreshToken = async (req, res) => {
     });
     if (p) {
       const token = jwt.sign({ uid: p.uid }, process.env.TOKEN_PASS, {
-        expiresIn: "1m",
+        expiresIn: "15m",
       });
       const myRefreshToken = uuidv4();
       const p2 = await tokendb.findOneAndUpdate(
@@ -247,7 +247,7 @@ exports.checkFacebookToken = async (req, res) => {
 
       if (n) {
         const token = jwt.sign({ uid: myuid }, process.env.TOKEN_PASS, {
-          expiresIn: "1m",
+          expiresIn: "15m",
         });
         res.status(200).send({
           uid: myuid,
