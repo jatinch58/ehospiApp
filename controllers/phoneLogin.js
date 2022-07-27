@@ -5,6 +5,7 @@ const tokendb = require("../models/refreshToken");
 const { v4: uuidv4 } = require("uuid");
 const AWS = require("aws-sdk");
 const Joi = require("joi");
+const otpdb = require("../models/otpModel");
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ID,
   secretAccessKey: process.env.AWS_SECRET,
@@ -25,19 +26,38 @@ exports.phoneLogin = (req, res) => {
     if (result.error) {
       res.status(400).send({ message: "Please enter a valid number" });
     } else {
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      const link =
+        "https://bulksmsindia.app/V2/http-api.php?apikey=" +
+        process.env.SMS_KEY +
+        "&senderid=" +
+        process.env.SMS_ID +
+        "&number=" +
+        req.body.phone +
+        "&message=Your%20One%20Time%20Password%20is%20" +
+        otp +
+        "%20Do%20not%20share%20with%20anyone.%20Easy%20Wellness&format=json";
       axios
-        .get(
-          "https://2factor.in/API/V1/" +
-            process.env.TWO_FACTOR +
-            "/SMS/" +
-            req.body.phone +
-            "/AUTOGEN"
-        )
-        .then(function (response) {
-          res.status(200).send(response.data);
+        .get(link)
+        .then((response1) => {
+          if (response1.data.status === "OK") {
+            const createOTP = new otpdb({
+              msgid: response1.data.msgid,
+              otp: Number(otp),
+              phone: response1.data.data[0].mobile - 910000000000,
+            });
+            createOTP
+              .save()
+              .then(() => {
+                res.status(200).send({ msgid: response1.data.msgid });
+              })
+              .catch((e) => {
+                res.status(500).send({ message: e.name });
+              });
+          }
         })
         .catch((er) => {
-          res.status(500).send({ message: "Error" });
+          res.status(500).send({ message: er.name });
         });
     }
   } catch (er) {
@@ -50,52 +70,47 @@ exports.verifyOTP = async (req, res) => {
     const { body } = req;
     const otpSchema = Joi.object()
       .keys({
-        details: Joi.string().required(),
+        msgid: Joi.string().required(),
         otp: Joi.number().max(999999).required(),
-        phone: Joi.string()
-          .regex(/^[6-9]{1}[0-9]{9}$/)
-          .required(),
       })
       .required();
     let result = otpSchema.validate(body);
     if (result.error) {
       res.status(400).send({ message: "Please enter a valid details" });
     } else {
-      axios
-        .get(
-          "https://2factor.in/API/V1/" +
-            process.env.TWO_FACTOR +
-            "/SMS/VERIFY/" +
-            req.body.details +
-            "/" +
-            req.body.otp
-        )
-        .then(async function (response) {
-          if (response.data.Details === "OTP Matched") {
-            const myuid = "ph" + req.body.phone;
-            const myRefreshToken = uuidv4();
-            await tokendb.findOneAndDelete({ uid: myuid });
-            const createRefreshToken = new tokendb({
-              uid: myuid,
-              refreshToken: myRefreshToken,
-            });
-            const n = await createRefreshToken.save();
-
-            if (n) {
-              const token = jwt.sign({ uid: myuid }, process.env.TOKEN_PASS, {
-                expiresIn: "15m",
-              });
-              res.status(200);
-              res.send({
-                uid: myuid,
-                token: token,
-                refreshToken: myRefreshToken,
-              });
-            } else {
-              res.status(500).send({ message: "Something bad happened" });
-            }
-          }
+      const findOTP = await otpdb.findOne({ msgid: req.body.msgid });
+      if (!findOTP) {
+        return res.status(401).send({ message: "OTP Expired" });
+      }
+      if (findOTP.otp != req.body.otp) {
+        return res.status(400).send({ message: "Invalid OTP" });
+      }
+      if (findOTP.otp == req.body.otp) {
+        const myuid = "ph" + findOTP.phone;
+        const myRefreshToken = uuidv4();
+        await tokendb.findOneAndDelete({ uid: myuid });
+        const createRefreshToken = new tokendb({
+          uid: myuid,
+          refreshToken: myRefreshToken,
         });
+        const n = await createRefreshToken.save();
+
+        if (n) {
+          const token = jwt.sign({ uid: myuid }, process.env.TOKEN_PASS, {
+            expiresIn: "15m",
+          });
+          res.status(200);
+          res.send({
+            uid: myuid,
+            token: token,
+            refreshToken: myRefreshToken,
+          });
+        } else {
+          res.status(500).send({ message: "Something bad happened" });
+        }
+      } else {
+        res.status(500).send({ message: "Something bad happened" });
+      }
     }
   } catch (e) {
     res.status(500).send({ message: e.name });
