@@ -59,7 +59,7 @@ exports.hospitalForm = async (req, res) => {
       .unknown();
     let result = hospitalFormSchema.validate(body);
     if (result.error) {
-      res.status(403).send("Please enter valid details");
+      res.status(400).send("Please enter valid details");
     } else {
       let prescriptionFile = req.files.prescription[0].originalname.split(".");
       const fileType1 = prescriptionFile[prescriptionFile.length - 1];
