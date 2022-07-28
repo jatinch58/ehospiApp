@@ -59,7 +59,7 @@ exports.hospitalForm = async (req, res) => {
       .unknown();
     let result = hospitalFormSchema.validate(body);
     if (result.error) {
-      res.status(400).send("Please enter valid details");
+      res.status(400).send({ message: result.error.details[0].message });
     } else {
       let prescriptionFile = req.files.prescription[0].originalname.split(".");
       const fileType1 = prescriptionFile[prescriptionFile.length - 1];
@@ -175,7 +175,7 @@ exports.hospitalForm1 = async (req, res) => {
       .unknown();
     let result = hospitalFormSchema.validate(body);
     if (result.error) {
-      res.status(400).send("Please enter valid details");
+      res.status(400).send({ error: result.error.details[0].message });
     } else {
       let prescriptionFile = req.files.prescription[0].originalname.split(".");
       const fileType1 = prescriptionFile[prescriptionFile.length - 1];
