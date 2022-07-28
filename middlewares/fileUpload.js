@@ -11,3 +11,7 @@ exports.formUpload = upload.fields([
   { name: "idProof", maxCount: 1 },
   { name: "insurance", maxCount: 1 },
 ]);
+exports.formUpload1 = upload.fields([
+  { name: "prescription", maxCount: 1 },
+  { name: "idProof", maxCount: 1 },
+]);
